@@ -43,3 +43,14 @@ react (from) 18.3.1 (to) 19.0.0
 react-native (from) 0.76.9 (to) 0.79.2
 
 jest-expo (from) 52.0.6 (to) 53.0.5
+
+---
+
+## Steps to Reproduce
+
+1. Clone and cd into this repo
+2. `yarn`
+3. Run a single test to see it pass with: `node_modules/.bin/jest --runTestsByPath -t '^the same two tests pass when run individually$' -- "__tests__/test.test.tsx"`
+4. Run both tests to see the latter one fail and note the where the console.logs get cut off after the `await response.json()` line: `node_modules/.bin/jest --runTestsByPath -- "__tests__/test.test.tsx"`
+
+Downgrading to Expo SDK 52 allows running the command in step 4 to see both tests pass.
