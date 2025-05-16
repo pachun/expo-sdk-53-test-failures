@@ -5,13 +5,10 @@ import {
   waitFor,
   act,
 } from "expo-router/testing-library"
-import nock from "nock"
+import { http, HttpResponse } from "msw"
+import { setupServer } from "msw/native"
 
 const test = async () => {
-  nock("https://some.place")
-    .post("/api/gmail/authenticate", { code: "code" })
-    .reply(200, { hello: "world" })
-
   renderRouter("app", { initialUrl: "/" })
 
   await waitFor(() => {
@@ -27,7 +24,24 @@ const test = async () => {
   })
 }
 
+const server = setupServer(
+  http.post(
+    "https://some.place/api/gmail/authenticate",
+    async ({ request }) => {
+      const body = (await request.json()) as { code?: string }
+      if (body.code === "code") {
+        return HttpResponse.json({ hello: "world" }, { status: 200 })
+      }
+      return HttpResponse.json({ error: "Invalid code" }, { status: 400 })
+    },
+  ),
+)
+
 describe("the same two tests", () => {
+  beforeAll(() => server.listen())
+  afterEach(() => server.resetHandlers())
+  afterAll(() => server.close())
+
   it("pass when run individually", async () => {
     await test()
   })
